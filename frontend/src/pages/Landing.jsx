@@ -13,7 +13,7 @@ const Landing = () => {
   return (
     <div className="container py-5">
       <header className="text-center mb-5">
-        <h1 className="fw-bold display-5">Welcome to KNU MATE</h1>
+        <h1 className="fw-bold display-5">KNU MATE</h1>
         <p className="lead text-muted">Explore academic resources by school, type, and year.</p>
       </header>
 
