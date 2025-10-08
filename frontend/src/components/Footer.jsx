@@ -4,7 +4,7 @@ const Footer = () => {
       <div className="container d-flex justify-content-center align-items-center text-center">
         <div>
           <h5 className="mb-0 fw-bold"> MATERIALS AT HAND</h5>
-          <small><l>Designed by REUTECH HUB INNOVATIONS</l></small>
+          <small><>Designed by REUTECH HUB INNOVATIONS</></small>
         </div>
       </div>
     </footer>
