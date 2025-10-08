@@ -1,0 +1,31 @@
+:root {
+	--brand-blue: #0d6efd;
+	--brand-purple: #6610f2;
+	--accent-gradient: linear-gradient(90deg, var(--brand-blue), var(--brand-purple));
+}
+
+body {
+	background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+	color: #1f2937;
+}
+
+.badge.bg-primary {
+	background: var(--brand-blue) !important;
+}
+
+.btn-primary {
+	background: var(--brand-blue);
+	border-color: var(--brand-blue);
+}
+
+.btn-primary:hover {
+	background: var(--brand-purple);
+	border-color: var(--brand-purple);
+}
+
+h2 {
+	color: #111827;
+}
+
+footer small { opacity: 0.9 }
+
