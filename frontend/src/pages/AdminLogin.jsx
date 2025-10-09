@@ -16,7 +16,7 @@ const AdminLogin = () => {
     setError('');
     try {
       const apiUrl = import.meta.env.VITE_API_URL; // Read the API URL
-      console.log('API URL:', apiUrl); // Debugging line to check the URL
+      //console.log('API URL:', apiUrl); // Debugging line to check the URL
 
       // Ensure the URL is constructed correctly
       const res = await axios.post(`${apiUrl}/api/auth/login`, { username, password });
