@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 // axios removed: use service helpers in ../services/api
 import { useAuth } from '../context/useAuth';
-import { getSchools, getPrograms, getCourses, uploadMaterial, addSchool as apiAddSchool, addProgram as apiAddProgram, addCourse as apiAddCourse } from '../services/api';
+import { getSchools, getPrograms, getIntakes, getCourses, uploadMaterial, addSchool as apiAddSchool, addProgram as apiAddProgram, addIntake as apiAddIntake, addCourse as apiAddCourse } from '../services/api';
 
 const AdminUpload = () => {
   const [schools, setSchools] = useState([]);
   const [programs, setPrograms] = useState([]);
+  const [intakes, setIntakes] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedSchool, setSelectedSchool] = useState('');
   const [selectedProgram, setSelectedProgram] = useState('');
+  const [selectedIntake, setSelectedIntake] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
   const [type, setType] = useState('notes');
   const [year, setYear] = useState('');
@@ -19,12 +21,6 @@ const AdminUpload = () => {
   const [showStructure, setShowStructure] = useState(false);
 
   const { user } = useAuth();
-
-  const authHeaders = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
   useEffect(() => {
     getSchools().then(res => setSchools(res.data)).catch(err => { console.error(err); setSchools([]); });
   }, []);
@@ -35,9 +31,14 @@ const AdminUpload = () => {
   }, [selectedSchool]);
 
   useEffect(() => {
-    // If a program is selected, fetch courses for it; otherwise fetch all courses
-    getCourses(selectedProgram || undefined).then(res => setCourses(res.data)).catch(err => { console.error(err); setCourses([]); });
+    // If a program is selected, fetch intakes for it
+    getIntakes(selectedProgram || undefined).then(res => setIntakes(res.data)).catch(err => { console.error(err); setIntakes([]); });
   }, [selectedProgram]);
+
+  useEffect(() => {
+    // If an intake is selected, fetch courses for it
+    getCourses(selectedIntake || undefined).then(res => setCourses(res.data)).catch(err => { console.error(err); setCourses([]); });
+  }, [selectedIntake]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -55,12 +56,13 @@ const AdminUpload = () => {
     formData.append('title', title);
     formData.append('type', type);
     formData.append('year', year);
+    formData.append('intakeId', selectedIntake);
     formData.append('courseId', selectedCourse);
     formData.append('tags', tags);
     formData.append('file', file);
 
     try {
-      await uploadMaterial(formData, { headers: { ...authHeaders(), 'Content-Type': 'multipart/form-data' } });
+      await uploadMaterial(formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       setMessage('Upload successful!');
     } catch (err) {
       console.error('Upload failed', err);
@@ -72,7 +74,7 @@ const AdminUpload = () => {
   // Admin helpers to add school/program/course inline
   const addSchool = async (name, description='') => {
     try {
-      const res = await apiAddSchool({ name, description }, { headers: authHeaders() });
+      const res = await apiAddSchool({ name, description });
       // refresh
       const refreshed = await getSchools();
       setSchools(refreshed.data);
@@ -86,7 +88,7 @@ const AdminUpload = () => {
 
   const addProgram = async (name, schoolId) => {
     try {
-      const res = await apiAddProgram({ name, schoolId }, { headers: authHeaders() });
+      const res = await apiAddProgram({ name, schoolId });
       const refreshed = await getPrograms(schoolId);
       setPrograms(refreshed.data);
       setMessage('Program added');
@@ -97,10 +99,24 @@ const AdminUpload = () => {
     }
   };
 
-  const addCourse = async (name, programId) => {
+  const addIntake = async (name, programId) => {
     try {
-      const res = await apiAddCourse({ name, programId }, { headers: authHeaders() });
-      const refreshed = await getCourses(programId);
+      const res = await apiAddIntake({ name, programId });
+      // refresh
+      const refreshed = await getIntakes(programId);
+      setIntakes(refreshed.data);
+      setMessage('Intake added');
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      setMessage('Failed to add intake');
+    }
+  };
+
+  const addCourse = async (name, intakeId) => {
+    try {
+      const res = await apiAddCourse({ name, intakeId });
+      const refreshed = await getCourses(intakeId);
       setCourses(refreshed.data);
       setMessage('Course added');
       return res.data;
@@ -121,37 +137,40 @@ const AdminUpload = () => {
         <>
           <h2 className="fw-bold mb-4 text-center">Admin Upload Panel</h2>
           <form onSubmit={handleUpload} className="row g-3">
-            <div className="col-md-4">
+            <div className="col-lg-3 col-md-6 col-sm-12">
               <label className="form-label">School</label>
-              <div className="d-flex align-items-center">
-                <select className="form-select me-2" style={{ flex: '1 1 auto', minWidth: 0, maxWidth: 'calc(100% - 260px)' }} value={selectedSchool} onChange={e => setSelectedSchool(e.target.value)}>
-                  <option value="">All Schools</option>
-                  {Array.isArray(schools) && schools.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                </select>
-                <AddInlineSchool onAdd={addSchool} />
-              </div>
+              <select className="form-select" value={selectedSchool} onChange={e => setSelectedSchool(e.target.value)}>
+                <option value="">All Schools</option>
+                {Array.isArray(schools) && schools.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+              </select>
+              <AddInlineSchool onAdd={addSchool} />
             </div>
 
-            <div className="col-md-4">
+            <div className="col-lg-3 col-md-6 col-sm-12">
               <label className="form-label">Program</label>
-              <div className="d-flex align-items-center">
-                <select className="form-select me-2" style={{ flex: '1 1 auto', minWidth: 0, maxWidth: 'calc(100% - 260px)' }} value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)}>
-                  <option value="">All Programs</option>
-                  {Array.isArray(programs) && programs.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-                </select>
-                <AddInlineProgram schoolId={selectedSchool} onAdd={addProgram} />
-              </div>
+              <select className="form-select" value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)}>
+                <option value="">All Programs</option>
+                {Array.isArray(programs) && programs.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+              </select>
+              <AddInlineProgram schoolId={selectedSchool} onAdd={addProgram} />
             </div>
 
-            <div className="col-md-4">
+            <div className="col-lg-3 col-md-6 col-sm-12">
+              <label className="form-label">Intake</label>
+              <select className="form-select" value={selectedIntake} onChange={e => setSelectedIntake(e.target.value)}>
+                <option value="">All Intakes</option>
+                {Array.isArray(intakes) && intakes.map(i => <option key={i._id} value={i._id}>{i.name}</option>)}
+              </select>
+              <AddInlineIntake programId={selectedProgram} onAdd={addIntake} />
+            </div>
+
+            <div className="col-lg-3 col-md-6 col-sm-12">
               <label className="form-label">Course</label>
-              <div className="d-flex align-items-center">
-                <select className="form-select me-2" style={{ flex: '1 1 auto', minWidth: 0, maxWidth: 'calc(100% - 260px)' }} value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)}>
-                  <option value="">All Courses</option>
-                  {Array.isArray(courses) && courses.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                </select>
-                <AddInlineCourse programId={selectedProgram} onAdd={addCourse} />
-              </div>
+              <select className="form-select" value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)}>
+                <option value="">All Courses</option>
+                {Array.isArray(courses) && courses.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+              <AddInlineCourse intakeId={selectedIntake} onAdd={addCourse} />
             </div>
 
             <div className="col-md-4">
@@ -244,7 +263,7 @@ function AddInlineProgram({ schoolId, onAdd }) {
   );
 }
 
-function AddInlineCourse({ programId, onAdd }) {
+function AddInlineIntake({ programId, onAdd }) {
   const [name, setName] = useState('');
   const [adding, setAdding] = useState(false);
 
@@ -252,6 +271,26 @@ function AddInlineCourse({ programId, onAdd }) {
     if (!name.trim() || !programId) return alert('Select a program first');
     setAdding(true);
     await onAdd(name.trim(), programId);
+    setName('');
+    setAdding(false);
+  };
+
+  return (
+    <div className="d-flex" style={{ minWidth: 260, flexShrink: 0 }}>
+      <input className="form-control form-control-sm me-1" placeholder="+ Intake" value={name} onChange={e => setName(e.target.value)} style={{ minWidth: 180 }} />
+      <button type="button" className="btn btn-sm btn-primary" onClick={submit} disabled={adding}>Add</button>
+    </div>
+  );
+}
+
+function AddInlineCourse({ intakeId, onAdd }) {
+  const [name, setName] = useState('');
+  const [adding, setAdding] = useState(false);
+
+  const submit = async () => {
+    if (!name.trim() || !intakeId) return alert('Select an intake first');
+    setAdding(true);
+    await onAdd(name.trim(), intakeId);
     setName('');
     setAdding(false);
   };

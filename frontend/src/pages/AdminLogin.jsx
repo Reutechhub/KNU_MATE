@@ -20,11 +20,15 @@ const AdminLogin = () => {
 
       // Ensure the URL is constructed correctly
       const res = await axios.post(`${apiUrl}/api/auth/login`, { username, password });
-      if (res.data?.user) {
+      if (res.data?.user && res.data?.token) {
+        login({ ...res.data.user, token: res.data.token });
+        navigate('/admin/manage');
+      } else if (res.data?.user) {
+        // Fallback if token is not directly in res.data but user is
         login(res.data.user);
-        if (res.data.token) localStorage.setItem('token', res.data.token);
-        navigate('/admin/upload');
-      } else {
+        navigate('/admin/manage');
+      }
+      else {
         setError('Invalid login response');
       }
     } catch (err) {

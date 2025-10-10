@@ -72,25 +72,28 @@ const MaterialList = ({ type }) => {
         </div>
       ))}
 
-      {/* Modal-ish preview */}
+      {/* Modal preview */}
       {previewUrl && (
-        <div className="modal show d-block" tabIndex="-1" role="dialog">
-          <div className="modal-dialog modal-xl" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Preview</h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={() => setPreviewUrl(null)}></button>
-              </div>
-              <div className="modal-body" style={{ minHeight: '70vh' }}>
-                <iframe src={previewUrl} title="preview" style={{ width: '100%', height: '70vh', border: 'none' }} />
-              </div>
-              <div className="modal-footer">
-                <a href={previewUrl} target="_blank" rel="noreferrer" className="btn btn-primary">Open in new tab</a>
-                <button type="button" className="btn btn-secondary" onClick={() => setPreviewUrl(null)}>Close</button>
+        <>
+          <div className="modal-backdrop show" onClick={() => setPreviewUrl(null)}></div>
+          <div className="modal show d-block" tabIndex="-1" role="dialog">
+            <div className="modal-dialog modal-xl" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Preview</h5>
+                  <button type="button" className="btn-close" aria-label="Close" onClick={() => setPreviewUrl(null)}></button>
+                </div>
+                <div className="modal-body" style={{ minHeight: '70vh' }}>
+                  <embed src={previewUrl} type="application/pdf" width="100%" height="70vh" />
+                </div>
+                <div className="modal-footer">
+                  <a href={previewUrl} target="_blank" rel="noreferrer" className="btn btn-primary">Open in new tab</a>
+                  <button type="button" className="btn btn-secondary" onClick={() => setPreviewUrl(null)}>Close</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

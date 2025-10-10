@@ -15,7 +15,7 @@ const createProgramme = async (req, res) => {
   try {
     const programme = await Programme.create({
       name: req.body.name,
-      school: req.body.schoolId,
+      school: req.body.school,
     });
     res.status(201).json(programme);
   } catch (err) {
@@ -27,7 +27,7 @@ const createCourse = async (req, res) => {
   try {
     const course = await Course.create({
       name: req.body.name,
-      programme: req.body.programmeId,
+      programme: req.body.programme,
     });
     res.status(201).json(course);
   } catch (err) {

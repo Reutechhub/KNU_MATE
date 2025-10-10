@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import { getCourses } from '../services/api';
 
 const CourseView = () => {
-  const { schoolId, programId } = useParams();
+  const { schoolId, programId, intakeId } = useParams();
   const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getCourses(programId).then(res => setCourses(res.data));
-  }, [programId]);
+    getCourses(intakeId).then(res => setCourses(res.data));
+  }, [intakeId]);
 
   return (
     <div className="container py-5 text-center">
@@ -17,7 +17,7 @@ const CourseView = () => {
       <div className="row justify-content-center">
         {courses.map(course => (
           <div key={course._id} className="col-md-4 mb-3">
-            <button className="btn btn-outline-primary w-100" onClick={() => navigate(`/school/${schoolId}/program/${programId}/course/${course._id}`)}>
+            <button className="btn btn-outline-primary w-100" onClick={() => navigate(`/school/${schoolId}/program/${programId}/intake/${intakeId}/course/${course._id}`)}>
               {course.name}
             </button>
           </div>

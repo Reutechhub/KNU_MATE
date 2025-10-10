@@ -1,6 +1,7 @@
 const express = require('express');
 const School = require('../models/School');
 const Program = require('../models/Program');
+const Intake = require('../models/Intake');
 const Course = require('../models/Course');
 const Material = require('../models/Material');
 
@@ -17,9 +18,17 @@ router.get('/programs', async (req, res) => {
   res.json(programs);
 });
 
-router.get('/courses', async (req, res) => {
+router.get('/intakes', async (req, res) => {
   const { programId } = req.query;
-  const courses = await Course.find({ programId });
+  const filter = programId ? { programId } : {};
+  const intakes = await Intake.find(filter);
+  res.json(intakes);
+});
+
+router.get('/courses', async (req, res) => {
+  const { intakeId } = req.query;
+  const filter = intakeId ? { intakeId } : {};
+  const courses = await Course.find(filter);
   res.json(courses);
 });
 
