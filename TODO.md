@@ -2,7 +2,7 @@
 - [x] Modify App.jsx to add 35s timeout for backend check, include logo and "Processing..." in loading, and change error message to "Refresh or check your connectivity".
 - [x] Update AdminManage.jsx to allow deleting schools, programs, intakes, courses, and materials with tabs.
 - [x] Update Navbar.jsx to dark theme, add logo.png, remove logout button.
-- [x] Update Footer.jsx to make text smaller and position fixed at bottom.
+- [x] Update Footer.jsx to make text smaller.
 - [x] Update MaterialList.jsx to use <embed> for PDF preview instead of iframe.
 - [x] Update adminRoutes.js to use resource_type: 'raw' for Cloudinary uploads to fix PDF preview.
 - [x] Adjust AdminUpload.jsx layout to be responsive and prevent overlapping on wider screens.
