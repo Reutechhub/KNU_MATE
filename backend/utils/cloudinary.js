@@ -13,7 +13,7 @@ if (process.env.CLOUDINARY_URL) {
   // If a full URL is provided, let the SDK parse it.
   cloudinary.config({ cloudinary_url: process.env.CLOUDINARY_URL });
 } else if (cloudName && apiKey && apiSecret) {
-  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
 } else {
   // Provide a clear runtime error so developers can quickly see which vars are missing.
   console.error('Cloudinary configuration error: missing credentials.');

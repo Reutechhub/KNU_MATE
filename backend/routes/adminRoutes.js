@@ -18,7 +18,7 @@ const uploadStream = (filePath, originalName) => new Promise((resolve, reject) =
   const cleanName = originalName.replace(/\.pdf+$/i, '');
   const publicId = `${Date.now()}-${cleanName}`;
   const readStream = fs.createReadStream(filePath);
-  const stream = cloudinary.uploader.upload_stream({ resource_type: 'auto', folder: 'knu_mate_materials', public_id: publicId }, (error, result) => {
+  const stream = cloudinary.uploader.upload_stream({ resource_type: 'auto', folder: 'knu_mate_materials', public_id: publicId, access_mode: 'public' }, (error, result) => {
     if (error) return reject(error);
     resolve(result);
   });

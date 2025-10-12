@@ -3,9 +3,11 @@ const cloudinary = require('../utils/cloudinary');
 const fs = require('fs');
 
 // Helper to upload local file via stream
-const uploadStream = (filePath) => new Promise((resolve, reject) => {
+const uploadStream = (filePath, originalName) => new Promise((resolve, reject) => {
+  const cleanName = originalName.replace(/\.pdf+$/i, '');
+  const publicId = `${Date.now()}-${cleanName}`;
   const readStream = fs.createReadStream(filePath);
-  const stream = cloudinary.uploader.upload_stream({ folder: 'knu-mate', resource_type: 'auto' }, (error, result) => {
+  const stream = cloudinary.uploader.upload_stream({ folder: 'knu-mate', resource_type: 'auto', public_id: publicId, access_mode: 'public' }, (error, result) => {
     if (error) return reject(error);
     resolve(result);
   });
@@ -19,7 +21,7 @@ const uploadMaterial = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const result = await uploadStream(req.file.path);
+    const result = await uploadStream(req.file.path, req.file.originalname);
 
     const material = await Material.create({
       title,

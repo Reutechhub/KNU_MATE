@@ -7,16 +7,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdfjs-worker.min.js`;
 
-const yearBucket = (y) => {
-  const yearNum = parseInt(y, 10);
-  if (isNaN(yearNum)) return 'Other';
-  if (yearNum <= 1 || yearNum <= 2001) return 'First Year';
-  // If your year values are actual years (e.g., 2000), map them by offset from course start.
-  // We'll use a simple heuristic: earliest years -> First, then Second, Third, Fourth.
-  if (yearNum <= 2002) return 'Second Year';
-  if (yearNum <= 2003) return 'Third Year';
-  return 'Fourth Year';
-};
+
 
 const DocumentsPage = ({ type }) => {
   const { courseId, year } = useParams();
@@ -41,12 +32,8 @@ const DocumentsPage = ({ type }) => {
     return (m.title || '').toLowerCase().includes(q) || (m.tags || []).join(' ').toLowerCase().includes(q) || (m.course?.name || '').toLowerCase().includes(q);
   });
 
-  // Group by year bucket
-  const groups = filtered.reduce((acc, m) => {
-    const bucket = yearBucket(m.year);
-    (acc[bucket] = acc[bucket] || []).push(m);
-    return acc;
-  }, {});
+  // No grouping, just list all materials
+  const groups = { 'All Documents': filtered };
 
   return (
     <div className="container py-5">

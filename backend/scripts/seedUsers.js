@@ -25,7 +25,7 @@ const seedUsers = async () => {
     }
 
     // Create default admin user
-    const hashedPassword = await bcrypt.hash('1@knumate', 10);
+    const hashedPassword = await bcrypt.hash('KNU@54321', 10);
     const adminUser = new User({
       username: 'root',
       password: hashedPassword,
@@ -36,11 +36,11 @@ const seedUsers = async () => {
     console.log('Admin user seeded successfully');
 
     // Create additional admin user
-    const existingAdmin2 = await User.findOne({ username: 'root' });
+    const existingAdmin2 = await User.findOne({ username: 'admin2' });
     if (!existingAdmin2) {
       const hashedPassword2 = await bcrypt.hash('1@knumate', 10);
       const adminUser2 = new User({
-        username: 'root',
+        username: 'admin2',
         password: hashedPassword2,
         role: 'admin'
       });
