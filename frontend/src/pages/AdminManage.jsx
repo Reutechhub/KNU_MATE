@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API as api } from '../services/api';
+import { getAdminSchools, getAdminPrograms, getAdminIntakes, getAdminCourses, getAdminMaterials, deleteSchool, deleteProgram, deleteIntake, deleteCourse, deleteMaterial } from '../services/api';
 
 const AdminManage = () => {
   const [activeTab, setActiveTab] = useState('schools');
@@ -19,11 +19,11 @@ const AdminManage = () => {
     try {
       setLoading(true);
       const [schoolsRes, programsRes, intakesRes, coursesRes, materialsRes] = await Promise.all([
-        api.get('/admin/schools'),
-        api.get('/admin/programs'),
-        api.get('/admin/intakes'),
-        api.get('/admin/courses'),
-        api.get('/admin/materials')
+        getAdminSchools(),
+        getAdminPrograms(),
+        getAdminIntakes(),
+        getAdminCourses(),
+        getAdminMaterials()
       ]);
       setSchools(schoolsRes.data);
       setPrograms(programsRes.data);
@@ -41,7 +41,16 @@ const AdminManage = () => {
   const handleDelete = async (type, id) => {
     if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
       try {
-        await api.delete(`/admin/${type}/${id}`);
+        let deleteFunc;
+        switch (type) {
+          case 'schools': deleteFunc = deleteSchool; break;
+          case 'programs': deleteFunc = deleteProgram; break;
+          case 'intakes': deleteFunc = deleteIntake; break;
+          case 'courses': deleteFunc = deleteCourse; break;
+          case 'materials': deleteFunc = deleteMaterial; break;
+          default: throw new Error('Unknown type');
+        }
+        await deleteFunc(id);
         fetchAll(); // Refresh all lists after deletion
       } catch (err) {
         setError(`Failed to delete ${type}.`);

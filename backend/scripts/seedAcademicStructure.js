@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import School from '../models/School.js';
 import Program from '../models/Program.js';
+import Intake from '../models/Intake.js';
 import Course from '../models/Course.js';
 
 dotenv.config();
@@ -14,15 +15,29 @@ const structure = [
     programs: [
       {
         name: 'Bachelor of Business Studies with Education',
-        courses: ['Business Methods', 'Education Theory'],
+        intakes: [
+          {
+            name: 'Year 1',
+            courses: ['Business Methods', 'Education Theory'],
+          },
+          {
+            name: 'Year 2',
+            courses: ['Advanced Business', 'Teaching Practice'],
+          },
+        ],
       },
       {
         name: 'Bachelor of ICT with Education',
-        courses: ['ICT Fundamentals', 'Networking'],
-      },
-      {
-        name: 'Bachelor of Arts in Economics',
-        courses: ['Microeconomics', 'Macroeconomics'],
+        intakes: [
+          {
+            name: 'Year 1',
+            courses: ['ICT Fundamentals', 'Networking'],
+          },
+          {
+            name: 'Year 2',
+            courses: ['Advanced ICT', 'System Administration'],
+          },
+        ],
       },
     ],
   },
@@ -32,52 +47,45 @@ const structure = [
     programs: [
       {
         name: 'Bachelor of Arts with Education - English & History',
-        courses: ['English Literature', 'World History'],
-      },
-      {
-        name: 'Bachelor of Arts with Education - Civic Education & French',
-        courses: ['Civic Theory', 'French Language'],
-      },
-    ],
-  },
-  {
-    name: 'School of Natural Sciences',
-    description: 'Departments in Biology, Chemistry, Physics, and Mathematics.',
-    programs: [
-      {
-        name: 'Bachelor of Science in Biology and Chemistry with Education',
-        courses: ['Cell Biology', 'Organic Chemistry'],
-      },
-      {
-        name: 'Bachelor of Science in Mathematics and Physics with Education',
-        courses: ['Calculus', 'Mechanics'],
-      },
-    ],
-  },
-  {
-    name: 'School of Education',
-    description: 'Focused on teacher training, psychology, and educational management.',
-    programs: [
-      {
-        name: 'Bachelor of Primary Education',
-        courses: ['Child Development', 'Curriculum Design'],
-      },
-      {
-        name: 'Bachelor of Education in Early Childhood Education',
-        courses: ['Play-Based Learning', 'Early Literacy'],
+        intakes: [
+          {
+            name: 'Year 1',
+            courses: ['English Literature', 'World History'],
+          },
+          {
+            name: 'Year 2',
+            courses: ['Advanced English', 'Modern History'],
+          },
+        ],
       },
     ],
   },
 ];
 
 for (const schoolData of structure) {
-  const school = await School.create({ name: schoolData.name, description: schoolData.description });
+  let school = await School.findOne({ name: schoolData.name });
+  if (!school) {
+    school = await School.create({ name: schoolData.name, description: schoolData.description });
+  }
 
   for (const programData of schoolData.programs) {
-    const program = await Program.create({ name: programData.name, schoolId: school._id });
+    let program = await Program.findOne({ name: programData.name, schoolId: school._id });
+    if (!program) {
+      program = await Program.create({ name: programData.name, schoolId: school._id });
+    }
 
-    for (const courseName of programData.courses) {
-      await Course.create({ name: courseName, programId: program._id });
+    for (const intakeData of programData.intakes) {
+      let intake = await Intake.findOne({ name: intakeData.name, programId: program._id });
+      if (!intake) {
+        intake = await Intake.create({ name: intakeData.name, programId: program._id });
+      }
+
+      for (const courseName of intakeData.courses) {
+        const existingCourse = await Course.findOne({ name: courseName, intakeId: intake._id });
+        if (!existingCourse) {
+          await Course.create({ name: courseName, intakeId: intake._id });
+        }
+      }
     }
   }
 }

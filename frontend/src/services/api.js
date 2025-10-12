@@ -21,6 +21,10 @@ export const getPrograms = (schoolId) => {
   if (schoolId) return API.get(`/programs?schoolId=${schoolId}`);
   return API.get('/programs');
 };
+export const getYears = (programId) => {
+  if (programId) return API.get(`/intakes?programId=${programId}`);
+  return API.get('/intakes');
+};
 export const getIntakes = (programId) => {
   if (programId) return API.get(`/intakes?programId=${programId}`);
   return API.get('/intakes');
@@ -43,5 +47,18 @@ export const addSchool = (payload, config) => API.post('/admin/schools', payload
 export const addProgram = (payload, config) => API.post('/admin/programs', payload, config);
 export const addIntake = (payload, config) => API.post('/admin/intakes', payload, config);
 export const addCourse = (payload, config) => API.post('/admin/courses', payload, config); // Ensure backend expects intakeId in payload
+
+// Admin management endpoints
+export const getAdminSchools = () => API.get('/admin/schools');
+export const getAdminPrograms = () => API.get('/admin/programs');
+export const getAdminIntakes = () => API.get('/admin/intakes');
+export const getAdminCourses = () => API.get('/admin/courses');
+export const getAdminMaterials = () => API.get('/admin/materials');
+
+export const deleteSchool = (id) => API.delete(`/admin/schools/${id}`);
+export const deleteProgram = (id) => API.delete(`/admin/programs/${id}`);
+export const deleteIntake = (id) => API.delete(`/admin/intakes/${id}`);
+export const deleteCourse = (id) => API.delete(`/admin/courses/${id}`);
+export const deleteMaterial = (id) => API.delete(`/admin/materials/${id}`);
 
 export default API;

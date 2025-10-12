@@ -14,9 +14,11 @@ const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
 // Helper: upload using a stream to avoid any path resolution issues
-const uploadStream = (filePath) => new Promise((resolve, reject) => {
+const uploadStream = (filePath, originalName) => new Promise((resolve, reject) => {
+  const cleanName = originalName.replace(/\.pdf+$/i, '');
+  const publicId = `${Date.now()}-${cleanName}`;
   const readStream = fs.createReadStream(filePath);
-  const stream = cloudinary.uploader.upload_stream({ resource_type: 'raw', folder: 'knu_mate_materials' }, (error, result) => {
+  const stream = cloudinary.uploader.upload_stream({ resource_type: 'auto', folder: 'knu_mate_materials', public_id: publicId }, (error, result) => {
     if (error) return reject(error);
     resolve(result);
   });
@@ -28,30 +30,69 @@ const uploadStream = (filePath) => new Promise((resolve, reject) => {
 // Require token decode first so requireAdmin can inspect req.user
 router.post('/schools', decodeToken, requireAdmin, async (req, res) => {
   const { name, description } = req.body;
-  const school = await School.create({ name, description });
-  res.json(school);
+  const trimmedName = name.trim();
+  try {
+    const existingSchool = await School.findOne({ name: trimmedName });
+    if (existingSchool) {
+      return res.status(409).json({ error: 'School with this name already exists' });
+    }
+    const school = await School.create({ name: trimmedName, description });
+    res.json(school);
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ error: 'School with this name already exists' });
+    }
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Add Program
 router.post('/programs', decodeToken, requireAdmin, async (req, res) => {
   const { name, schoolId } = req.body;
-  const program = await Program.create({ name, schoolId });
-  res.json(program);
+  const trimmedName = name.trim();
+  try {
+    const existingProgram = await Program.findOne({ name: trimmedName, schoolId });
+    if (existingProgram) {
+      return res.status(409).json({ error: 'Program with this name already exists for the selected school' });
+    }
+    const program = await Program.create({ name: trimmedName, schoolId });
+    res.json(program);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Add Intake
 router.post('/intakes', decodeToken, requireAdmin, async (req, res) => {
   const { name, programId } = req.body;
-  // You might want to add validation here to ensure name and programId exist
-  const intake = await Intake.create({ name, programId });
-  res.status(201).json(intake);
+  const trimmedName = name.trim();
+  try {
+    const existingIntake = await Intake.findOne({ name: trimmedName, programId });
+    if (existingIntake) {
+      return res.status(409).json({ error: 'Intake with this name already exists for the selected program' });
+    }
+    // You might want to add validation here to ensure name and programId exist
+    const intake = await Intake.create({ name: trimmedName, programId });
+    res.status(201).json(intake);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Add Course
 router.post('/courses', decodeToken, requireAdmin, async (req, res) => {
   const { name, intakeId } = req.body; // Changed from programId to intakeId
-  const course = await Course.create({ name, intakeId }); // Changed from programId to intakeId
-  res.json(course);
+  const trimmedName = name.trim();
+  try {
+    const existingCourse = await Course.findOne({ name: trimmedName, intakeId });
+    if (existingCourse) {
+      return res.status(409).json({ error: 'Course with this name already exists for the selected intake' });
+    }
+    const course = await Course.create({ name: trimmedName, intakeId }); // Changed from programId to intakeId
+    res.json(course);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Upload Material
@@ -64,10 +105,22 @@ router.post('/materials/upload', decodeToken, requireAdmin, upload.single('file'
   }
 
   try {
-    const result = await uploadStream(req.file.path);
+    // Check for duplicate material (same title, type, year, courseId)
+    const existingMaterial = await Material.findOne({
+      title: title.trim(),
+      type,
+      year,
+      courseId
+    });
+
+    if (existingMaterial) {
+      return res.status(409).json({ error: 'A material with the same title, type, year, and course already exists' });
+    }
+
+    const result = await uploadStream(req.file.path, req.file.originalname);
 
     const material = await Material.create({
-      title,
+      title: title.trim(),
       type,
       year,
       courseId,

@@ -56,7 +56,6 @@ const AdminUpload = () => {
     formData.append('title', title);
     formData.append('type', type);
     formData.append('year', year);
-    formData.append('intakeId', selectedIntake);
     formData.append('courseId', selectedCourse);
     formData.append('tags', tags);
     formData.append('file', file);
@@ -177,7 +176,7 @@ const AdminUpload = () => {
               <label className="form-label">Material Type</label>
               <select className="form-select" value={type} onChange={e => setType(e.target.value)}>
                 <option value="notes">Notes</option>
-                <option value="papers">Past Papers</option>
+                <option value="past-papers">Past Papers</option>
               </select>
             </div>
 
