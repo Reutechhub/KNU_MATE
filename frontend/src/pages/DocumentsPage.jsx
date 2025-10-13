@@ -7,8 +7,6 @@ import 'react-pdf/dist/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdfjs-worker.min.js`;
 
-
-
 const DocumentsPage = ({ type }) => {
   const { courseId, year } = useParams();
   const [materials, setMaterials] = useState([]);
@@ -16,7 +14,6 @@ const DocumentsPage = ({ type }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
-
 
   useEffect(() => {
     getMaterials(courseId, type, year).then(res => setMaterials(res.data)).catch(() => setMaterials([]));
@@ -31,6 +28,26 @@ const DocumentsPage = ({ type }) => {
     const q = query.toLowerCase();
     return (m.title || '').toLowerCase().includes(q) || (m.tags || []).join(' ').toLowerCase().includes(q) || (m.course?.name || '').toLowerCase().includes(q);
   });
+
+  const handleDownload = async (url, filename) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    }
+  };
 
   // No grouping, just list all materials
   const groups = { 'All Documents': filtered };
@@ -61,7 +78,7 @@ const DocumentsPage = ({ type }) => {
                     <p className="card-text text-muted">{mat.course?.name} • {mat.year} • {mat.type}</p>
                     <div className="mt-auto d-flex gap-2">
                       <button className="btn btn-outline-secondary" onClick={() => setPreviewUrl(mat.fileUrl)}>View</button>
-                      <a href={mat.fileUrl} target="_blank" rel="noreferrer" className="btn btn-primary" download={`${mat.title.replace(/\.pdf$/i, '')}.pdf`}>Download</a>
+                      <button className="btn btn-primary" onClick={() => handleDownload(mat.fileUrl, `${mat.title.replace(/\.pdf$/i, '')}.pdf`)}>Download</button>
                     </div>
                   </div>
                 </div>
